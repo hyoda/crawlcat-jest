@@ -81,11 +81,11 @@ export class CodeGenerator {
       }).format(amount);
     });
 
-    Handlebars.registerHelper('ifEquals', function(arg1: any, arg2: any, options: any) {
+    Handlebars.registerHelper('ifEquals', function(this: any, arg1: any, arg2: any, options: any) {
       return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
     });
 
-    Handlebars.registerHelper('ifGreaterThan', function(arg1: number, arg2: number, options: any) {
+    Handlebars.registerHelper('ifGreaterThan', function(this: any, arg1: number, arg2: number, options: any) {
       return (arg1 > arg2) ? options.fn(this) : options.inverse(this);
     });
 
@@ -94,7 +94,7 @@ export class CodeGenerator {
       return str.substring(0, length) + '...';
     });
 
-    Handlebars.registerHelper('times', function(n: number, options: any) {
+    Handlebars.registerHelper('times', function(this: any, n: number, options: any) {
       let result = '';
       for (let i = 0; i < n; i++) {
         result += options.fn({ index: i, count: i + 1 });
@@ -234,15 +234,6 @@ export class CodeGenerator {
         }
       },
       {
-        name: 'TypeScript Interfaces',
-        template: 'typescript-interfaces',
-        outputPath: 'types/product.types.ts',
-        data: { products: crawlingData.products },
-        metadata: {
-          description: 'Generated TypeScript interfaces for products'
-        }
-      },
-      {
         name: 'React Component',
         template: 'product-list-component',
         outputPath: 'components/ProductList.tsx',
@@ -250,16 +241,6 @@ export class CodeGenerator {
         metadata: {
           description: 'Generated React component for product listing',
           dependencies: ['react', '@types/react']
-        }
-      },
-      {
-        name: 'Jest Test Suite',
-        template: 'product-test-suite',
-        outputPath: 'tests/product-api.test.ts',
-        data: { products: crawlingData.products },
-        metadata: {
-          description: 'Generated Jest tests for product API',
-          dependencies: ['jest', '@types/jest', 'supertest']
         }
       }
     ];
@@ -290,21 +271,38 @@ export class CodeGenerator {
     results: GenerationResult[],
     options: GenerationOptions
   ): Promise<void> {
-    const indexTemplate: CodeTemplate = {
-      name: 'Generated Index',
-      template: 'generated-index',
-      outputPath: 'index.ts',
-      data: {
-        files: results.map(result => ({
-          name: path.basename(result.filePath, path.extname(result.filePath)),
-          path: result.filePath,
-          template: result.template,
-          linesOfCode: result.linesOfCode
-        }))
-      }
-    };
+    const indexContent = `// Auto-generated index file
+// Generated at: ${new Date().toISOString()}
 
-    await this.generateCode(indexTemplate, options);
+${results.map(result => {
+  const relativePath = './' + path.relative(
+    path.dirname(path.join(this.outputDir, 'index.ts')),
+    result.filePath
+  ).replace(/\.(ts|tsx)$/, '');
+  const exportName = path.basename(result.filePath, path.extname(result.filePath));
+  
+  if (result.filePath.endsWith('.ts') || result.filePath.endsWith('.tsx')) {
+    return `export { default as ${exportName} } from '${relativePath}';`;
+  }
+  return `// ${exportName}: ${relativePath}`;
+}).join('\n')}
+
+export const generatedFiles = [
+${results.map(result => `  {
+    name: '${path.basename(result.filePath)}',
+    path: '${result.filePath}',
+    template: '${result.template}',
+    linesOfCode: ${result.linesOfCode},
+    size: ${result.size}
+  }`).join(',\n')}
+];
+`;
+
+    const indexPath = path.join(this.outputDir, 'index.ts');
+    await fs.ensureDir(path.dirname(indexPath));
+    await fs.writeFile(indexPath, indexContent);
+    
+    console.log(`📄 Generated index file: ${indexPath}`);
   }
 
   /**

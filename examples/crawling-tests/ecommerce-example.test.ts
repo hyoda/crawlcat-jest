@@ -22,9 +22,8 @@ describe('E-commerce Crawling Example', () => {
   // Setup browser and crawler before all tests
   beforeAll(async () => {
     browserManager = new BrowserManager({
-      headless: false, // Set to true for headless mode
-      slowMo: 100,     // Slow down actions for demo
-      defaultTimeout: 10000
+      defaultTimeout: 10000,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
     await browserManager.launch();
@@ -212,7 +211,7 @@ describe('E-commerce Crawling Example', () => {
       await CrawlerUtils.scrollToBottom(page);
 
       // Wait a bit more for any dynamic content
-      await page.waitForTimeout(2000);
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const productCount = await CrawlerUtils.getElementCount(page, 'article.product_pod');
       expect(productCount).toBeGreaterThan(0);
@@ -259,7 +258,7 @@ describe('E-commerce Crawling Example', () => {
         });
       } catch (error) {
         expect(error).toBeDefined();
-        console.log('⚠️ Expected network error caught:', error.message);
+        console.log('⚠️ Expected network error caught:', (error as Error).message);
       }
 
       // Should still be able to navigate to valid page
@@ -294,7 +293,7 @@ describe('E-commerce Crawling Example', () => {
         } catch (error) {
           if (attempts < maxAttempts) {
             console.log(`⚠️ Attempt ${attempts} failed, retrying...`);
-            await page.waitForTimeout(1000); // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retry
             return attemptExtraction();
           }
           throw error;

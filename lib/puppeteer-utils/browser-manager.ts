@@ -7,6 +7,8 @@ export interface BrowserConfig extends LaunchOptions {
   };
   userAgent?: string;
   defaultTimeout?: number;
+  slowMo?: number;
+  headless?: boolean;
 }
 
 export class BrowserManager {

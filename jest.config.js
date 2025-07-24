@@ -11,7 +11,7 @@ module.exports = {
   ],
   
   // Module name mapping for path aliases
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@lib/(.*)$': '<rootDir>/lib/$1',
     '^@ai/(.*)$': '<rootDir>/ai/$1',
@@ -103,55 +103,6 @@ module.exports = {
   globalSetup: '<rootDir>/jest.global-setup.js',
   globalTeardown: '<rootDir>/jest.global-teardown.js',
   
-  // Test environments for different test types
-  projects: [
-    {
-      displayName: 'unit',
-      testMatch: [
-        '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}',
-        '<rootDir>/lib/**/*.{test,spec}.{js,jsx,ts,tsx}',
-        '<rootDir>/examples/basic-tests/**/*.{test,spec}.{js,jsx,ts,tsx}'
-      ],
-      testEnvironment: 'node'
-    },
-    {
-      displayName: 'integration',
-      testMatch: [
-        '<rootDir>/ai/**/*.{test,spec}.{js,jsx,ts,tsx}',
-        '<rootDir>/examples/crawling-tests/**/*.{test,spec}.{js,jsx,ts,tsx}'
-      ],
-      testEnvironment: 'node',
-      testTimeout: 45000
-    },
-    {
-      displayName: 'e2e',
-      testMatch: [
-        '<rootDir>/e2e/**/*.{test,spec}.{js,jsx,ts,tsx}',
-        '<rootDir>/examples/automation-tests/**/*.{test,spec}.{js,jsx,ts,tsx}'
-      ],
-      testEnvironment: 'node',
-      testTimeout: 60000
-    }
-  ],
-  
-  // Reporters for different output formats
-  reporters: [
-    'default',
-    [
-      'jest-html-reporters',
-      {
-        publicPath: './coverage/html-report',
-        filename: 'jest-report.html',
-        expand: true,
-        hideIcon: false,
-        pageTitle: 'CrawlCat Jest Test Report',
-        logoImgPath: undefined,
-        includeFailureMsg: true,
-        includeSuiteFailure: true
-      }
-    ]
-  ],
-  
   // Watch mode settings
   watchPathIgnorePatterns: [
     '<rootDir>/node_modules/',
@@ -161,8 +112,5 @@ module.exports = {
   ],
   
   // Snapshot settings
-  snapshotSerializers: [],
-  
-  // Custom test sequencer for E2E tests
-  testSequencer: '<rootDir>/jest.test-sequencer.js'
+  snapshotSerializers: []
 };

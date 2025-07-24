@@ -110,7 +110,9 @@ describe('Calculator', () => {
       
       // More specific error testing
       expect(() => calculator.divide(5, 0)).toThrow(Error);
-      
+    });
+    
+    test('should throw error instance when dividing by zero', () => {
       // Testing with expect.assertions to ensure error is thrown
       expect.assertions(1);
       try {

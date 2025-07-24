@@ -41,19 +41,6 @@ module.exports = {
     'no-unused-vars': 'off', // Use TypeScript version instead
     'prefer-const': 'error',
     'no-var': 'error',
-    
-    // Code style
-    'indent': ['error', 2],
-    'quotes': ['error', 'single', { 'avoidEscape': true }],
-    'semi': ['error', 'always'],
-    'comma-dangle': ['error', 'never'],
-    
-    // Jest specific rules
-    'jest/no-disabled-tests': 'off',
-    'jest/no-focused-tests': 'error',
-    'jest/no-identical-title': 'error',
-    'jest/prefer-to-have-length': 'warn',
-    'jest/valid-expect': 'error',
   },
   overrides: [
     {

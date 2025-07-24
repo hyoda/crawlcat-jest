@@ -162,20 +162,20 @@ describe('{{scenario.title}}', () => {
     Handlebars.registerPartial('assertionTemplate', this.templates.get('assertionTemplate') || '');
 
     // Register helper functions
-    Handlebars.registerHelper('switch', function(value, options) {
+    Handlebars.registerHelper('switch', function(this: any, value: any, options: any) {
       this._switch_value_ = value;
       const html = options.fn(this);
       delete this._switch_value_;
       return html;
     });
 
-    Handlebars.registerHelper('case', function(value, options) {
+    Handlebars.registerHelper('case', function(this: any, value: any, options: any) {
       if (value === this._switch_value_) {
         return options.fn(this);
       }
     });
 
-    Handlebars.registerHelper('default', function(options) {
+    Handlebars.registerHelper('default', function(this: any, options: any) {
       return options.fn(this);
     });
 
