@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jest 인터랙티브 학습 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Slate with a muted Blue accent) -->
+    <!-- Application Structure Plan: A two-column Learning Dashboard. A sticky left sidebar provides hierarchical navigation for all 10 parts of the guide, allowing non-linear access. The right column displays the content for the selected section. This structure transforms the long, linear document into a navigable and reference-friendly application, which is superior for both initial learning and future lookups. User flow is centered on selecting a topic and consuming the content, enhanced by an IntersectionObserver to keep the navigation in sync with the scroll position. -->
+    <!-- Visualization & Content Choices: Report Info: Jest concepts, code examples, comparison tables. Goal: Inform, Compare, Organize. Viz/Presentation: Styled HTML tables for comparisons (Matchers, Mocking Strategy), CSS-based diagram for execution order, and interactive code blocks with a 'copy' feature. Interaction: Sticky navigation with active state highlighting, copy-to-clipboard buttons. Justification: Since the report contains no quantitative data, traditional charts are inappropriate. The chosen methods directly enhance the consumption of the source's conceptual and code-based information, prioritizing usability and learning efficiency. Library/Method: Vanilla JS for interactions, Tailwind CSS for styling. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .nav-link.active {
+            background-color: #e0f2fe;
+            color: #0284c7;
+            font-weight: 600;
+        }
+        .code-block {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #475569;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .code-block:hover .copy-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="flex min-h-screen">
+        <aside class="w-64 sticky top-0 h-screen overflow-y-auto bg-white border-r border-slate-200 p-4 hidden lg:block">
+            <h1 class="text-xl font-bold text-slate-800 mb-4">Jest 학습 가이드</h1>
+            <nav id="navigation-menu">
+                <ul>
+                    <!-- Navigation links will be dynamically inserted here -->
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-4 sm:p-6 md:p-10">
+            <div id="content" class="max-w-4xl mx-auto">
+                <section id="part-1" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part I: 테스트 주도 학습의 새로운 패러다임</h2>
+                    <p class="text-lg text-slate-600 mb-8">AI 시대, 개발자에게 테스트 자동화는 선택이 아닌 필수 역량이 되었습니다. 이 섹션에서는 왜 우리가 테스트를 해야 하는지, 그리고 수많은 도구 중 왜 Jest를 선택해야 하는지에 대한 근본적인 이유를 탐구합니다. 또한 AI를 단순한 코드 생성기가 아닌, 학습을 가속하는 '학습 파트너'로 활용하는 혁신적인 전략을 소개합니다.</p>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">1.1. 서론: 왜 Jest이며, 왜 테스트인가?</h3>
+                            <p class="mb-4">현대 소프트웨어 개발에서 견고한 테스팅 문화는 선택이 아닌 필수입니다. 테스트는 단순히 버그를 찾는 행위를 넘어, 코드의 안정성을 보장하고, 사용자 경험을 향상시키며, 장기적인 유지보수성을 높이는 핵심적인 가치 창출 활동입니다. 잘 작성된 테스트 코드는 그 자체로 살아있는 문서가 되어, 코드의 의도를 명확히 전달하고 자신감 있는 배포를 가능하게 합니다.</p>
+                            <p class="mb-4">수많은 자바스크립트 테스트 프레임워크 중에서 Jest는 "단순함에 초점을 맞춘 즐거운 자바스크립트 테스팅 프레임워크"라는 철학으로 독보적인 위치를 차지합니다. Jest의 가장 큰 장점은 '제로 설정(Zero-configuration)'입니다. 복잡한 설정 없이도 즉시 테스트를 시작할 수 있어 초보자가 겪는 초기 진입 장벽을 크게 낮춥니다.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">1.2. AI 코드 조수: 메타 학습 전략</h3>
+                            <p class="mb-4">이 가이드의 핵심은 AI를 단순한 코드 생성기가 아닌, 학습 과정을 가속하는 '소크라테스식 학습 파트너'로 활용하는 전략을 제안하는 데 있습니다. 많은 개발자들이 처음 마주하는 진짜 장벽은 '테스터의 사고방식'을 습득하는 것입니다. AI는 이 간극을 메우는 탁월한 조력자가 될 수 있습니다.</p>
+                            <blockquote class="border-l-4 border-sky-500 bg-sky-50 p-4 my-4 rounded-r-lg">
+                                <p class="font-semibold text-sky-800">AI 협업 학습 전략 예시:</p>
+                                <ul class="list-disc list-inside mt-2 text-sky-700">
+                                    <li><strong class="font-semibold">개념 설명 요청:</strong> "Jest의 `mock` 함수에 대해 5살 아이도 이해할 수 있도록 설명해 줘."</li>
+                                    <li><strong class="font-semibold">코드 생성 및 리팩토링:</strong> "이 테스트 코드의 문제점은 무엇이고, 어떻게 개선할 수 있을까?"</li>
+                                    <li><strong class="font-semibold">오류 기반 학습:</strong> "이 에러의 원인은 무엇이며, 해결 방법은 뭐야?"</li>
+                                    <li><strong class="font-semibold">비교 분석:</strong> "`toBe`와 `toEqual`의 차이점과 사용 사례를 알려줘."</li>
+                                </ul>
+                            </blockquote>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="part-2" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part II: 기초 다지기: Jest와 AI의 첫 만남</h2>
+                    <p class="text-lg text-slate-600 mb-8">모든 여정은 첫걸음부터 시작됩니다. 이 섹션에서는 Jest 테스트 환경을 구축하는 과정을 단계별로 안내합니다. Node.js 설치 확인부터 Jest 패키지 설치, 설정 파일 생성, 그리고 Babel이나 TypeScript와 같은 최신 자바스크립트 도구와의 연동까지, 견고한 테스트 환경의 기초를 다집니다. AI를 활용해 이 복잡한 과정을 자동화하는 팁도 확인해 보세요.</p>
+
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">2.2. 설치 및 프로젝트 초기화</h3>
+                            <p class="mb-4">프로젝트 루트에서 다음 명령어를 순서대로 실행하여 Jest를 설치하고 테스트를 실행할 준비를 합니다.</p>
+                            <div class="code-block bg-slate-800 text-white p-4 rounded-lg my-4">
+                                <button class="copy-btn">복사</button>
+                                <pre><code class="language-bash"># 1. 프로젝트 초기화 (package.json 생성)
+npm init -y
+
+# 2. Jest 설치 (개발 의존성)
+npm install --save-dev jest
+
+# 3. package.json에 테스트 스크립트 추가
+# "scripts": {
+#   "test": "jest"
+# }</code></pre>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">2.4. 최신 자바스크립트와의 통합: Babel & TypeScript</h3>
+                            <p class="mb-4">Jest는 기본적으로 최신 자바스크립트 문법이나 TypeScript를 바로 해석하지 못하므로, 코드를 변환해주는 '트랜스파일러' 설정이 필요합니다. Babel을 사용한다면 다음 패키지를 설치해야 합니다.</p>
+                             <div class="code-block bg-slate-800 text-white p-4 rounded-lg my-4">
+                                <button class="copy-btn">복사</button>
+                                <pre><code class="language-bash">npm install --save-dev babel-jest @babel/core @babel/preset-env</code></pre>
+                            </div>
+                            <p class="mt-4">그 후, 프로젝트 루트에 `babel.config.js` 파일을 생성하고 설정합니다.</p>
+                            <div class="code-block bg-slate-800 text-white p-4 rounded-lg my-4">
+                                <button class="copy-btn">복사</button>
+                                <pre><code class="language-javascript">// babel.config.js
+module.exports = {
+  presets: [['@babel/preset-env', {targets: {node: 'current'}}]],
+};</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="part-3" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part III: 테스트의 구조: 'Hello, World!'를 넘어서</h2>
+                    <p class="text-lg text-slate-600 mb-8">테스트 코드는 단순히 동작을 검증하는 것을 넘어, 코드의 의도와 기대 결과를 서술하는 '이야기'가 되어야 합니다. 이 섹션에서는 `describe`, `test`, `expect`라는 Jest의 세 가지 핵심 구성 요소를 통해 어떻게 명확하고 구조적인 테스트를 작성하는지 배웁니다. 첫 번째 테스트인 `sum` 함수 예제를 통해 테스트 코드의 기본 골격을 익히고, AI를 활용한 코드 리뷰로 학습 효과를 극대화하는 방법을 알아봅니다.</p>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">3.1. 핵심 구조: `describe`, `test`, `expect`</h3>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                <li><code class="bg-slate-200 rounded px-1">describe()</code>: 연관된 테스트들을 하나의 논리적인 그룹으로 묶습니다.</li>
+                                <li><code class="bg-slate-200 rounded px-1">test()</code> 또는 <code class="bg-slate-200 rounded px-1">it()</code>: 개별 테스트 케이스 하나를 정의합니다.</li>
+                                <li><code class="bg-slate-200 rounded px-1">expect()</code>: 특정 값이 기대하는 조건을 만족하는지 검증(단언)을 시작합니다.</li>
+                            </ul>
+                        </div>
+                        <div>
+                             <h3 class="text-2xl font-semibold text-slate-800 mb-4">3.2. 첫 번째 테스트 예제</h3>
+                             <p class="mb-4">Jest의 전통적인 첫 예제인 `sum` 함수를 테스트하는 전체 코드입니다.</p>
+                             <div class="grid md:grid-cols-2 gap-4">
+                                <div class="code-block bg-slate-800 text-white p-4 rounded-lg">
+                                    <button class="copy-btn">복사</button>
+                                    <pre><code class="language-javascript">// sum.js
+function sum(a, b) {
+  return a + b;
+}
+module.exports = sum;</code></pre>
+                                </div>
+                                <div class="code-block bg-slate-800 text-white p-4 rounded-lg">
+                                    <button class="copy-btn">복사</button>
+                                    <pre><code class="language-javascript">// sum.test.js
+const sum = require('./sum');
+
+describe('sum function', () => {
+  test('adds 1 + 2 to equal 3', () => {
+    expect(sum(1, 2)).toBe(3);
+  });
+});</code></pre>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="part-4" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part IV: 단언의 기술: 매처(Matcher) 마스터하기</h2>
+                    <p class="text-lg text-slate-600 mb-8">매처(Matcher)는 테스트의 심장과 같습니다. `expect` 함수와 함께 사용되어 값이 기대하는 조건을 만족하는지 검증하는 역할을 합니다. 이 섹션에서는 가장 기본이 되는 `toBe`와 `toEqual`의 중요한 차이점부터 시작하여, 참/거짓, 숫자, 문자열, 배열, 예외 처리 등 다양한 상황에서 사용할 수 있는 풍부한 매처들을 알아봅니다. 매처를 능숙하게 사용하면 더 정확하고 표현력 있는 테스트를 작성할 수 있습니다.</p>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">4.1. `toBe` vs. `toEqual`</h3>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="bg-white p-6 rounded-lg border border-slate-200">
+                                    <h4 class="font-bold text-lg text-slate-900">`toBe`</h4>
+                                    <p class="text-slate-600 mt-2">원시 타입(숫자, 문자열 등)의 값을 비교하거나, 객체의 **참조 동일성**(메모리 주소)을 확인할 때 사용합니다.</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg border border-slate-200">
+                                    <h4 class="font-bold text-lg text-slate-900">`toEqual`</h4>
+                                    <p class="text-slate-600 mt-2">객체나 배열의 **값 동등성**(내용)을 확인할 때 사용합니다. 객체의 모든 속성을 재귀적으로 비교합니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">매처 빠른 참조 가이드</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white border border-slate-200 rounded-lg">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="text-left p-3 font-semibold text-slate-700">매처</th>
+                                            <th class="text-left p-3 font-semibold text-slate-700">사용 사례</th>
+                                            <th class="text-left p-3 font-semibold text-slate-700">예제</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200">
+                                        <tr><td class="p-3"><code class="bg-slate-200 rounded px-1">toBe(value)</code></td><td class="p-3">원시 값의 정확한 일치</td><td class="p-3"><code class="text-sm">expect(2+2).toBe(4);</code></td></tr>
+                                        <tr><td class="p-3"><code class="bg-slate-200 rounded px-1">toEqual(value)</code></td><td class="p-3">객체/배열 값의 동등성</td><td class="p-3"><code class="text-sm">expect({a:1}).toEqual({a:1});</code></td></tr>
+                                        <tr><td class="p-3"><code class="bg-slate-200 rounded px-1">toBeTruthy()</code></td><td class="p-3">값이 참(truthy)인지 확인</td><td class="p-3"><code class="text-sm">expect('hello').toBeTruthy();</code></td></tr>
+                                        <tr><td class="p-3"><code class="bg-slate-200 rounded px-1">toBeFalsy()</code></td><td class="p-3">값이 거짓(falsy)인지 확인</td><td class="p-3"><code class="text-sm">expect(0).toBeFalsy();</code></td></tr>
+                                        <tr><td class="p-3"><code class="bg-slate-200 rounded px-1">toContain(item)</code></td><td class="p-3">배열이 항목을 포함하는지 확인</td><td class="p-3"><code class="text-sm">expect(['a','b']).toContain('a');</code></td></tr>
+                                        <tr><td class="p-3"><code class="bg-slate-200 rounded px-1">toThrow()</code></td><td class="p-3">함수가 예외를 던지는지 확인</td><td class="p-3"><code class="text-sm">expect(fn).toThrow();</code></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="part-5" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part V: 테스트 생명주기 관리</h2>
+                    <p class="text-lg text-slate-600 mb-8">모든 테스트는 독립적이어야 합니다. 이 섹션에서는 `beforeEach`, `afterEach`, `beforeAll`, `afterAll` 훅을 사용하여 테스트 실행 전후에 필요한 설정 및 정리 작업을 관리하는 방법을 배웁니다. 이를 통해 테스트 간의 의존성을 제거하고, 항상 깨끗하고 예측 가능한 환경에서 테스트를 실행하여 '변덕스러운 테스트'를 방지할 수 있습니다.</p>
+
+                     <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">훅 실행 순서</h3>
+                            <p class="mb-4">Jest의 훅과 테스트 실행 순서는 처음에는 혼란스러울 수 있지만, 매우 중요합니다. 다음은 일반적인 실행 순서 다이어그램입니다.</p>
+                            <div class="p-4 border border-slate-300 rounded-lg bg-slate-50 text-sm">
+                                <div class="p-2 border border-blue-200 rounded bg-blue-100 mb-2">1. `beforeAll` (바깥 스코프)</div>
+                                <div class="p-2 border border-green-200 rounded bg-green-100 mb-2 ml-4">2. `beforeEach` (바깥 스코프)</div>
+                                <div class="p-2 border border-yellow-200 rounded bg-yellow-100 mb-2 ml-4">3. `test` (바깥 스코프)</div>
+                                <div class="p-2 border border-red-200 rounded bg-red-100 mb-2 ml-4">4. `afterEach` (바깥 스코프)</div>
+                                <div class="mt-4 p-4 border border-slate-400 rounded-lg">
+                                    <p class="font-bold text-slate-700 mb-2">describe 블록 시작</p>
+                                    <div class="p-2 border border-blue-200 rounded bg-blue-100 mb-2">5. `beforeAll` (안쪽 스코프)</div>
+                                    <div class="p-2 border border-green-200 rounded bg-green-100 mb-2 ml-4">6. `beforeEach` (바깥 스코프)</div>
+                                    <div class="p-2 border border-green-200 rounded bg-green-100 mb-2 ml-8">7. `beforeEach` (안쪽 스코프)</div>
+                                    <div class="p-2 border border-yellow-200 rounded bg-yellow-100 mb-2 ml-8">8. `test` (안쪽 스코프)</div>
+                                    <div class="p-2 border border-red-200 rounded bg-red-100 mb-2 ml-8">9. `afterEach` (안쪽 스코프)</div>
+                                    <div class="p-2 border border-red-200 rounded bg-red-100 mb-2 ml-4">10. `afterEach` (바깥 스코프)</div>
+                                    <div class="p-2 border border-purple-200 rounded bg-purple-100 mb-2">11. `afterAll` (안쪽 스코프)</div>
+                                </div>
+                                <div class="p-2 border border-purple-200 rounded bg-purple-100 mt-2">12. `afterAll` (바깥 스코프)</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="part-6" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part VI: 비동기 정복하기</h2>
+                    <p class="text-lg text-slate-600 mb-8">자바스크립트의 비동기 코드를 테스트하는 것은 특별한 주의가 필요합니다. 비동기 작업이 끝나기 전에 테스트가 종료되어 버그를 놓치는 '오탐'의 함정을 피하는 방법을 배웁니다. Promise를 직접 반환하는 전통적인 방식부터, 현대적이고 우아한 `async/await` 문법, 그리고 `.resolves`/`.rejects` 매처와 `expect.assertions()` 안전망까지, 비동기 코드를 자신감 있게 테스트하는 모든 기술을 다룹니다.</p>
+
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">`async/await`와 `.resolves`</h3>
+                            <p class="mb-4">`async/await` 문법을 사용하면 비동기 코드를 동기 코드처럼 간결하게 작성할 수 있습니다. `.resolves` 매처는 이를 더욱 우아하게 만들어 줍니다.</p>
+                             <div class="code-block bg-slate-800 text-white p-4 rounded-lg my-4">
+                                <button class="copy-btn">복사</button>
+                                <pre><code class="language-javascript">// fetchData()가 'peanut butter'로 resolve되는지 확인
+test('the data is peanut butter', async () => {
+  await expect(fetchData()).resolves.toBe('peanut butter');
+});
+
+// fetchData()가 'error'와 함께 reject되는지 확인
+test('the fetch fails with an error', async () => {
+  await expect(fetchData()).rejects.toThrow('error');
+});</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="part-7" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part VII: 모킹(Mocking)의 힘</h2>
+                    <p class="text-lg text-slate-600 mb-8">테스트는 외부 환경(API, 파일 시스템, 시간 등)의 영향을 받지 않고 오직 테스트 대상 코드의 로직에만 집중해야 합니다. '모킹'은 이러한 외부 의존성을 가짜(mock) 객체로 대체하여 테스트를 빠르고 안정적으로 만드는 강력한 기술입니다. 이 섹션에서는 `jest.fn()`, `jest.mock()`, 타이머 모킹 등 Jest가 제공하는 다양한 모킹 기법을 배우고, 상황에 맞는 올바른 도구를 선택하는 방법을 익힙니다.</p>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">모킹 전략 결정 매트릭스</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white border border-slate-200 rounded-lg">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="text-left p-3 font-semibold text-slate-700">도구</th>
+                                            <th class="text-left p-3 font-semibold text-slate-700">무엇을 모킹하는가?</th>
+                                            <th class="text-left p-3 font-semibold text-slate-700">주요 사용 사례</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200">
+                                        <tr><td class="p-3 font-mono">jest.fn()</td><td class="p-3">단일 함수</td><td class="p-3">콜백 함수, 의존성 주입된 함수의 동작 추적</td></tr>
+                                        <tr><td class="p-3 font-mono">jest.spyOn()</td><td class="p-3">객체의 기존 메서드</td><td class="p-3">기존 구현은 유지하면서 호출 여부만 추적</td></tr>
+                                        <tr><td class="p-3 font-mono">jest.mock()</td><td class="p-3">모듈 전체</td><td class="p-3">외부 라이브러리(axios 등) 의존성 완전 차단</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="part-8" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part VIII: 스냅샷 테스팅: UI 보안관</h2>
+                    <p class="text-lg text-slate-600 mb-8">UI 컴포넌트는 시간이 지남에 따라 예기치 않게 변경될 수 있습니다. 스냅샷 테스팅은 컴포넌트의 렌더링 결과를 '사진' 찍듯이 파일로 저장해두고, 이후의 변경 사항을 감지하는 효과적인 방법입니다. 이 섹션에서는 스냅샷 테스트의 기본 원리, 첫 스냅샷 생성, 의도적인 변경 사항 업데이트, 그리고 동적 데이터를 처리하는 방법까지 UI 테스트의 안정성을 높이는 비결을 알아봅니다.</p>
+
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">스냅샷 테스트 예제</h3>
+                            <p class="mb-4">`react-test-renderer`와 `toMatchSnapshot()` 매처를 사용한 기본적인 스냅샷 테스트입니다.</p>
+                            <div class="code-block bg-slate-800 text-white p-4 rounded-lg my-4">
+                                <button class="copy-btn">복사</button>
+                                <pre><code class="language-javascript">import renderer from 'react-test-renderer';
+import Link from '../Link';
+
+it('renders correctly', () => {
+  const tree = renderer
+   .create(&lt;Link page="http://www.facebook.com"&gt;Facebook&lt;/Link&gt;)
+   .toJSON();
+  expect(tree).toMatchSnapshot();
+});</code></pre>
+                            </div>
+                            <p class="mt-4">이 테스트를 처음 실행하면, Jest는 `__snapshots__` 폴더 안에 `.snap` 확장자를 가진 스냅샷 파일을 자동으로 생성합니다. 이후 컴포넌트의 출력이 변경되면 테스트는 실패하며, 의도된 변경이라면 `jest -u` 명령어로 스냅샷을 갱신할 수 있습니다.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="part-9" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part IX: 실전 응용: 프레임워크 컴포넌트 테스트하기</h2>
+                    <p class="text-lg text-slate-600 mb-8">이제 이론을 실전에 적용할 시간입니다. 이 섹션에서는 React Testing Library를 사용하여 React 컴포넌트를 테스트하는 현대적인 방법을 배웁니다. "구현 세부 사항이 아닌, 동작을 테스트하라"는 핵심 철학을 바탕으로, 실제 사용자의 관점에서 컴포넌트를 렌더링하고, 엘리먼트를 찾고, 이벤트를 발생시키는 실용적인 테스트 패턴을 익힙니다. 간단한 카운터 컴포넌트 예제를 통해 실전 감각을 길러보세요.</p>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">카운터 컴포넌트 테스트 예제</h3>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div class="code-block bg-slate-800 text-white p-4 rounded-lg">
+                                    <button class="copy-btn">복사</button>
+                                    <pre><code class="language-javascript">// Counter.js
+import React, { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() => setCount(count + 1)}&gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                                </div>
+                                <div class="code-block bg-slate-800 text-white p-4 rounded-lg">
+                                    <button class="copy-btn">복사</button>
+                                    <pre><code class="language-javascript">// Counter.test.js
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import Counter from './Counter';
+
+test('increments count when button is clicked', () => {
+  render(&lt;Counter /&gt;);
+  const button = screen.getByRole('button', { name: /increment/i });
+  fireEvent.click(button);
+  expect(screen.getByText('Count: 1')).toBeInTheDocument();
+});</code></pre>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="part-10" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Part X: 앞으로의 길: 숙련과 지속적인 학습</h2>
+                    <p class="text-lg text-slate-600 mb-8">Jest 학습 여정의 마지막 단계입니다. 여기서는 테스트의 성공을 측정하는 '코드 커버리지'의 의미와 올바른 해석 방법, 생산성을 높여주는 Jest CLI의 유용한 옵션들, 그리고 학습 과정에서 어려움을 겪을 때 도움을 받을 수 있는 커뮤니티 자원들을 소개합니다. 이 가이드를 발판 삼아, 코드에 대한 자신감을 가지고 더 나은 소프트웨어를 만드는 '자신감 있는 테스터'로 성장하시길 바랍니다.</p>
+
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">10.1. 성공 측정: 코드 커버리지</h3>
+                            <p class="mb-4">`--coverage` 플래그를 사용하면 테스트가 코드의 얼마나 많은 부분을 실행했는지 보여주는 리포트를 생성할 수 있습니다. 100% 커버리지가 항상 목표는 아니며, 양보다 질이 중요하다는 점을 기억하세요. 비즈니스 로직의 핵심적인 부분을 의미 있게 테스트하는 것이 더 가치 있습니다.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-800 mb-4">10.3. 커뮤니티와 함께하기</h3>
+                            <p>학습 과정에서 막히는 부분이 있다면 커뮤니티의 도움을 받는 것이 좋습니다. 다음은 유용한 자원들입니다.</p>
+                            <ul class="list-disc list-inside text-slate-700 space-y-1">
+                                <li>Jest 공식 문서</li>
+                                <li>Reactiflux Discord의 `#testing` 채널</li>
+                                <li>Stack Overflow의 `jestjs` 태그</li>
+                                <li>Jest 공식 블로그 및 트위터</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const content = document.getElementById('content');
+            const sections = content.querySelectorAll('section');
+            const navMenu = document.getElementById('navigation-menu').querySelector('ul');
+
+            const sectionData = [
+                { id: 'part-1', title: 'I. 테스트 주도 학습' },
+                { id: 'part-2', title: 'II. 기초 다지기' },
+                { id: 'part-3', title: 'III. 테스트의 구조' },
+                { id: 'part-4', title: 'IV. 매처 마스터하기' },
+                { id: 'part-5', title: 'V. 생명주기 관리' },
+                { id: 'part-6', title: 'VI. 비동기 정복하기' },
+                { id: 'part-7', title: 'VII. 모킹(Mocking)의 힘' },
+                { id: 'part-8', title: 'VIII. 스냅샷 테스팅' },
+                { id: 'part-9', title: 'IX. 실전 응용' },
+                { id: 'part-10', title: 'X. 앞으로의 길' },
+            ];
+
+            sectionData.forEach(item => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#${item.id}`;
+                a.textContent = item.title;
+                a.className = 'nav-link block p-2 rounded-md hover:bg-slate-100 transition-colors duration-200';
+                a.dataset.navId = item.id;
+                li.appendChild(a);
+                navMenu.appendChild(li);
+            });
+            
+            const navLinks = navMenu.querySelectorAll('.nav-link');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.dataset.navId === id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-20% 0px -80% 0px', threshold: 0 });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const codeBlock = button.nextElementSibling;
+                    const code = codeBlock.innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        button.textContent = '복사됨!';
+                        setTimeout(() => {
+                            button.textContent = '복사';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+{{#if options.includeComments}}
+/*
+ * {{metadata.description}}
+ * 
+ * Generated at: {{metadata.generatedAt}}
+ * Generator: {{metadata.generator}} v{{metadata.version}}
+ * Source: Crawled product data ({{products.length}} products)
+ */
+{{/if}}
+
+-- Create database and schema
+CREATE DATABASE IF NOT EXISTS crawlcat_products;
+USE crawlcat_products;
+
+{{#if options.includeComments}}
+-- Products table to store all product information
+{{/if}}
+CREATE TABLE IF NOT EXISTS products (
+    id VARCHAR(50) PRIMARY KEY,
+    title VARCHAR(500) NOT NULL,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    original_price DECIMAL(10,2) NULL,
+    currency CHAR(3) DEFAULT 'USD',
+    rating DECIMAL(3,2) DEFAULT 0.00,
+    review_count INT DEFAULT 0,
+    availability VARCHAR(100) DEFAULT 'Unknown',
+    image_url TEXT,
+    description TEXT,
+    brand VARCHAR(200),
+    category VARCHAR(200),
+    discount INT DEFAULT 0,
+    product_url TEXT,
+    extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    {{#if options.includeComments}}
+    -- Indexes for better query performance
+    {{/if}}
+    INDEX idx_price (price),
+    INDEX idx_rating (rating),
+    INDEX idx_brand (brand),
+    INDEX idx_category (category),
+    INDEX idx_availability (availability),
+    INDEX idx_extracted_at (extracted_at),
+    
+    {{#if options.includeComments}}
+    -- Full-text search index
+    {{/if}}
+    FULLTEXT INDEX ft_search (title, description, brand)
+);
+
+{{#if options.includeComments}}
+-- Categories table for normalized category data
+{{/if}}
+CREATE TABLE IF NOT EXISTS categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL UNIQUE,
+    parent_category_id INT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (parent_category_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+{{#if options.includeComments}}
+-- Brands table for normalized brand data
+{{/if}}
+CREATE TABLE IF NOT EXISTS brands (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL UNIQUE,
+    description TEXT,
+    website_url VARCHAR(500),
+    logo_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+{{#if options.includeComments}}
+-- Price history table to track price changes over time
+{{/if}}
+CREATE TABLE IF NOT EXISTS price_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id VARCHAR(50) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    currency CHAR(3) DEFAULT 'USD',
+    availability VARCHAR(100),
+    source VARCHAR(200),
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    INDEX idx_product_date (product_id, recorded_at),
+    INDEX idx_recorded_at (recorded_at)
+);
+
+{{#if options.includeComments}}
+-- Product reviews table (if review data is available)
+{{/if}}
+CREATE TABLE IF NOT EXISTS product_reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id VARCHAR(50) NOT NULL,
+    reviewer_name VARCHAR(200),
+    rating DECIMAL(3,2) NOT NULL,
+    review_title VARCHAR(500),
+    review_text TEXT,
+    review_date DATE,
+    verified_purchase BOOLEAN DEFAULT FALSE,
+    helpful_votes INT DEFAULT 0,
+    total_votes INT DEFAULT 0,
+    extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    INDEX idx_product_rating (product_id, rating),
+    INDEX idx_review_date (review_date)
+);
+
+{{#if options.includeComments}}
+-- Insert sample data from crawled products
+{{/if}}
+INSERT INTO products (
+    id, title, price, original_price, currency, rating, review_count,
+    availability, image_url, description, brand, category, discount,
+    product_url, extracted_at
+) VALUES
+{{#each products}}
+(
+    '{{@index}}',
+    {{json title}},
+    {{price}},
+    {{#if originalPrice}}{{originalPrice}}{{else}}NULL{{/if}},
+    {{json currency}},
+    {{rating}},
+    {{reviewCount}},
+    {{json availability}},
+    {{json imageUrl}},
+    {{#if description}}{{json (truncate description 1000)}}{{else}}NULL{{/if}},
+    {{#if brand}}{{json brand}}{{else}}NULL{{/if}},
+    {{#if category}}{{json category}}{{else}}NULL{{/if}},
+    {{#if discount}}{{discount}}{{else}}0{{/if}},
+    {{#if url}}{{json url}}{{else}}NULL{{/if}},
+    {{json extractedAt}}
+){{#unless @last}},{{/unless}}
+{{/each}};
+
+{{#if options.includeComments}}
+-- Insert unique categories
+{{/if}}
+INSERT IGNORE INTO categories (name) 
+SELECT DISTINCT category 
+FROM products 
+WHERE category IS NOT NULL AND category != '';
+
+{{#if options.includeComments}}
+-- Insert unique brands
+{{/if}}
+INSERT IGNORE INTO brands (name) 
+SELECT DISTINCT brand 
+FROM products 
+WHERE brand IS NOT NULL AND brand != '';
+
+{{#if options.includeComments}}
+-- Create views for common queries
+{{/if}}
+
+-- View for products with calculated discount percentages
+CREATE OR REPLACE VIEW products_with_discounts AS
+SELECT 
+    p.*,
+    CASE 
+        WHEN p.original_price > p.price 
+        THEN ROUND(((p.original_price - p.price) / p.original_price) * 100, 2)
+        ELSE 0 
+    END as calculated_discount_percent
+FROM products p;
+
+-- View for product statistics by category
+CREATE OR REPLACE VIEW category_stats AS
+SELECT 
+    category,
+    COUNT(*) as product_count,
+    AVG(price) as avg_price,
+    MIN(price) as min_price,
+    MAX(price) as max_price,
+    AVG(rating) as avg_rating,
+    SUM(review_count) as total_reviews
+FROM products 
+WHERE category IS NOT NULL 
+GROUP BY category;
+
+-- View for brand statistics
+CREATE OR REPLACE VIEW brand_stats AS
+SELECT 
+    brand,
+    COUNT(*) as product_count,
+    AVG(price) as avg_price,
+    AVG(rating) as avg_rating,
+    SUM(review_count) as total_reviews
+FROM products 
+WHERE brand IS NOT NULL 
+GROUP BY brand;
+
+{{#if options.includeComments}}
+-- Stored procedures for common operations
+{{/if}}
+
+DELIMITER //
+
+-- Procedure to get price history for a product
+CREATE PROCEDURE GetPriceHistory(IN product_id VARCHAR(50), IN days_back INT)
+BEGIN
+    SELECT 
+        ph.price,
+        ph.currency,
+        ph.availability,
+        ph.recorded_at,
+        p.title as product_title
+    FROM price_history ph
+    JOIN products p ON ph.product_id = p.id
+    WHERE ph.product_id = product_id
+    AND ph.recorded_at >= DATE_SUB(NOW(), INTERVAL days_back DAY)
+    ORDER BY ph.recorded_at DESC;
+END //
+
+-- Procedure to search products with filters
+CREATE PROCEDURE SearchProducts(
+    IN search_term VARCHAR(500),
+    IN min_price DECIMAL(10,2),
+    IN max_price DECIMAL(10,2),
+    IN min_rating DECIMAL(3,2),
+    IN category_filter VARCHAR(200),
+    IN brand_filter VARCHAR(200),
+    IN limit_count INT,
+    IN offset_count INT
+)
+BEGIN
+    SELECT 
+        p.*,
+        MATCH(p.title, p.description, p.brand) AGAINST(search_term) as relevance_score
+    FROM products p
+    WHERE (
+        search_term IS NULL OR search_term = '' OR
+        MATCH(p.title, p.description, p.brand) AGAINST(search_term IN NATURAL LANGUAGE MODE)
+    )
+    AND (min_price IS NULL OR p.price >= min_price)
+    AND (max_price IS NULL OR p.price <= max_price)
+    AND (min_rating IS NULL OR p.rating >= min_rating)
+    AND (category_filter IS NULL OR category_filter = '' OR p.category = category_filter)
+    AND (brand_filter IS NULL OR brand_filter = '' OR p.brand = brand_filter)
+    ORDER BY 
+        CASE WHEN search_term IS NOT NULL AND search_term != '' 
+        THEN relevance_score 
+        ELSE p.rating 
+        END DESC
+    LIMIT limit_count OFFSET offset_count;
+END //
+
+DELIMITER ;
+
+{{#if options.includeComments}}
+-- Create triggers for audit trail
+{{/if}}
+
+CREATE TRIGGER products_updated_at
+    BEFORE UPDATE ON products
+    FOR EACH ROW
+    SET NEW.updated_at = CURRENT_TIMESTAMP;
+
+{{#if options.includeComments}}
+-- Indexes for optimization
+{{/if}}
+CREATE INDEX idx_products_search ON products (title, brand, category);
+CREATE INDEX idx_products_price_rating ON products (price, rating);
+CREATE INDEX idx_products_discount ON products (discount);
+
+{{#if options.includeComments}}
+-- Sample queries for testing
+
+-- Get top-rated products
+-- SELECT * FROM products WHERE rating >= 4.0 ORDER BY rating DESC, review_count DESC LIMIT 10;
+
+-- Get products with discounts
+-- SELECT * FROM products_with_discounts WHERE calculated_discount_percent > 10 ORDER BY calculated_discount_percent DESC;
+
+-- Get category statistics
+-- SELECT * FROM category_stats ORDER BY product_count DESC;
+
+-- Search products
+-- CALL SearchProducts('laptop', 500, 2000, 4.0, NULL, NULL, 20, 0);
+
+-- Get price history
+-- CALL GetPriceHistory('123', 30);
+{{/if}}

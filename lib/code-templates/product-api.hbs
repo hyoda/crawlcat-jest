@@ -1,0 +1,354 @@
+{{#if options.includeComments}}
+/**
+ * {{metadata.description}}
+ * 
+ * Generated at: {{metadata.generatedAt}}
+ * Generator: {{metadata.generator}} v{{metadata.version}}
+ * Source: Crawled product data ({{products.length}} products)
+ */
+{{/if}}
+
+import { Request, Response, NextFunction } from 'express';
+
+{{#if options.includeTypes}}
+export interface ProductInfo {
+  id?: string;
+  title: string;
+  price: number;
+  originalPrice?: number;
+  currency: string;
+  rating: number;
+  reviewCount: number;
+  availability: string;
+  imageUrl: string;
+  description?: string;
+  brand?: string;
+  category?: string;
+  discount?: number;
+  url?: string;
+  extractedAt: string;
+}
+
+export interface ProductFilters {
+  category?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minRating?: number;
+  inStock?: boolean;
+}
+
+export interface ProductSearchOptions {
+  query?: string;
+  sortBy?: 'price' | 'rating' | 'title' | 'extractedAt';
+  sortOrder?: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
+}
+{{/if}}
+
+export class ProductAPI {
+  private products: ProductInfo[] = [
+    {{#each products}}
+    {
+      id: '{{@index}}',
+      title: {{json title}},
+      price: {{price}},
+      {{#if originalPrice}}
+      originalPrice: {{originalPrice}},
+      {{/if}}
+      currency: {{json currency}},
+      rating: {{rating}},
+      reviewCount: {{reviewCount}},
+      availability: {{json availability}},
+      imageUrl: {{json imageUrl}},
+      {{#if description}}
+      description: {{json (truncate description 200)}},
+      {{/if}}
+      {{#if brand}}
+      brand: {{json brand}},
+      {{/if}}
+      {{#if category}}
+      category: {{json category}},
+      {{/if}}
+      {{#if discount}}
+      discount: {{discount}},
+      {{/if}}
+      {{#if url}}
+      url: {{json url}},
+      {{/if}}
+      extractedAt: {{json extractedAt}}
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ];
+
+  {{#if options.includeComments}}
+  /**
+   * Get all products with optional filtering
+   */
+  {{/if}}
+  async getAllProducts(filters?: ProductFilters): Promise<ProductInfo[]> {
+    let filteredProducts = [...this.products];
+
+    if (filters) {
+      if (filters.category) {
+        filteredProducts = filteredProducts.filter(p => 
+          p.category?.toLowerCase().includes(filters.category!.toLowerCase())
+        );
+      }
+
+      if (filters.brand) {
+        filteredProducts = filteredProducts.filter(p => 
+          p.brand?.toLowerCase().includes(filters.brand!.toLowerCase())
+        );
+      }
+
+      if (filters.minPrice !== undefined) {
+        filteredProducts = filteredProducts.filter(p => p.price >= filters.minPrice!);
+      }
+
+      if (filters.maxPrice !== undefined) {
+        filteredProducts = filteredProducts.filter(p => p.price <= filters.maxPrice!);
+      }
+
+      if (filters.minRating !== undefined) {
+        filteredProducts = filteredProducts.filter(p => p.rating >= filters.minRating!);
+      }
+
+      if (filters.inStock !== undefined) {
+        filteredProducts = filteredProducts.filter(p => 
+          filters.inStock ? 
+            p.availability.toLowerCase().includes('stock') : 
+            !p.availability.toLowerCase().includes('stock')
+        );
+      }
+    }
+
+    return filteredProducts;
+  }
+
+  {{#if options.includeComments}}
+  /**
+   * Get a single product by ID
+   */
+  {{/if}}
+  async getProductById(id: string): Promise<ProductInfo | null> {
+    return this.products.find(p => p.id === id) || null;
+  }
+
+  {{#if options.includeComments}}
+  /**
+   * Search products with advanced options
+   */
+  {{/if}}
+  async searchProducts(options: ProductSearchOptions): Promise<{
+    products: ProductInfo[];
+    total: number;
+    hasMore: boolean;
+  }> {
+    let results = [...this.products];
+
+    // Apply text search
+    if (options.query) {
+      const query = options.query.toLowerCase();
+      results = results.filter(p => 
+        p.title.toLowerCase().includes(query) ||
+        p.description?.toLowerCase().includes(query) ||
+        p.brand?.toLowerCase().includes(query) ||
+        p.category?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    if (options.sortBy) {
+      results.sort((a, b) => {
+        let aVal: any = a[options.sortBy!];
+        let bVal: any = b[options.sortBy!];
+
+        if (typeof aVal === 'string') {
+          aVal = aVal.toLowerCase();
+          bVal = bVal.toLowerCase();
+        }
+
+        if (options.sortOrder === 'desc') {
+          return bVal > aVal ? 1 : -1;
+        } else {
+          return aVal > bVal ? 1 : -1;
+        }
+      });
+    }
+
+    const total = results.length;
+    const offset = options.offset || 0;
+    const limit = options.limit || 20;
+
+    // Apply pagination
+    const paginatedResults = results.slice(offset, offset + limit);
+    const hasMore = offset + limit < total;
+
+    return {
+      products: paginatedResults,
+      total,
+      hasMore
+    };
+  }
+
+  {{#if options.includeComments}}
+  /**
+   * Get products grouped by category
+   */
+  {{/if}}
+  async getProductsByCategory(): Promise<Record<string, ProductInfo[]>> {
+    const grouped: Record<string, ProductInfo[]> = {};
+
+    for (const product of this.products) {
+      const category = product.category || 'Uncategorized';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(product);
+    }
+
+    return grouped;
+  }
+
+  {{#if options.includeComments}}
+  /**
+   * Get price statistics
+   */
+  {{/if}}
+  async getPriceStatistics(): Promise<{
+    min: number;
+    max: number;
+    average: number;
+    median: number;
+    currency: string;
+  }> {
+    const prices = this.products.map(p => p.price).filter(p => p > 0);
+    
+    if (prices.length === 0) {
+      return { min: 0, max: 0, average: 0, median: 0, currency: 'USD' };
+    }
+
+    prices.sort((a, b) => a - b);
+    
+    const min = prices[0];
+    const max = prices[prices.length - 1];
+    const average = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+    const median = prices.length % 2 === 0
+      ? (prices[prices.length / 2 - 1] + prices[prices.length / 2]) / 2
+      : prices[Math.floor(prices.length / 2)];
+
+    return {
+      min,
+      max,
+      average: Math.round(average * 100) / 100,
+      median,
+      currency: this.products[0]?.currency || 'USD'
+    };
+  }
+
+  {{#if options.includeComments}}
+  /**
+   * Express.js route handlers
+   */
+  {{/if}}
+  
+  // GET /api/products
+  getAllProductsHandler = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const filters = req.query as ProductFilters;
+      const products = await this.getAllProducts(filters);
+      
+      res.json({
+        success: true,
+        data: products,
+        count: products.length
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // GET /api/products/:id
+  getProductByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const product = await this.getProductById(id);
+      
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: 'Product not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: product
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // GET /api/products/search
+  searchProductsHandler = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const searchOptions = req.query as ProductSearchOptions;
+      const results = await this.searchProducts(searchOptions);
+      
+      res.json({
+        success: true,
+        data: results.products,
+        pagination: {
+          total: results.total,
+          hasMore: results.hasMore,
+          offset: parseInt(req.query.offset as string) || 0,
+          limit: parseInt(req.query.limit as string) || 20
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // GET /api/products/categories
+  getCategoriesHandler = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const grouped = await this.getProductsByCategory();
+      
+      res.json({
+        success: true,
+        data: grouped,
+        categories: Object.keys(grouped)
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // GET /api/products/stats
+  getStatsHandler = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const stats = await this.getPriceStatistics();
+      
+      res.json({
+        success: true,
+        data: {
+          totalProducts: this.products.length,
+          ...stats,
+          lastUpdated: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+{{#if options.includeComments}}
+// Export singleton instance
+{{/if}}
+export const productAPI = new ProductAPI();
+export default productAPI;
