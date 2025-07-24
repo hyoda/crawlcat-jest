@@ -1,4 +1,5 @@
-import { Page, ElementHandle } from 'puppeteer';
+import { Page } from 'puppeteer';
+// import { ElementHandle } from 'puppeteer'; // Reserved for future use
 
 export interface WaitOptions {
   timeout?: number;
@@ -34,7 +35,7 @@ export class CrawlerUtils {
     try {
       await page.waitForSelector(selector, { timeout, visible });
       return true;
-    } catch (error) {
+    } catch {
       console.warn(`⚠️  Element ${selector} not found within ${timeout}ms`);
       return false;
     }
@@ -137,7 +138,7 @@ export class CrawlerUtils {
         });
       }, direction, distance, smooth);
       
-      await page.waitForTimeout(delay);
+      await new Promise(resolve => setTimeout(resolve, delay));
     } catch (error) {
       console.error(`❌ Failed to scroll:`, error);
       throw error;
@@ -165,7 +166,7 @@ export class CrawlerUtils {
           window.scrollTo(0, document.body.scrollHeight);
         });
         
-        await page.waitForTimeout(1000);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         previousHeight = currentHeight;
         scrollCount++;
       }
@@ -212,7 +213,7 @@ export class CrawlerUtils {
     } = options;
     
     try {
-      let screenshotOptions: any = {
+      const screenshotOptions: any = {
         type: 'jpeg',
         quality,
         fullPage
@@ -225,11 +226,11 @@ export class CrawlerUtils {
       if (selector) {
         const element = await page.$(selector);
         if (element) {
-          return await element.screenshot(screenshotOptions);
+          return await element.screenshot(screenshotOptions) as any;
         }
       }
       
-      return await page.screenshot(screenshotOptions);
+      return await page.screenshot(screenshotOptions) as any;
     } catch (error) {
       console.error(`❌ Failed to take screenshot:`, error);
       throw error;
@@ -279,7 +280,7 @@ export class CrawlerUtils {
         selector
       );
       return true;
-    } catch (error) {
+    } catch {
       console.warn(`⚠️  Element ${selector} not interactable within ${timeout}ms`);
       return false;
     }

@@ -48,7 +48,7 @@ export class CodeGenerator {
   private initializeHandlebarsHelpers(): void {
     // Register helper functions
     Handlebars.registerHelper('json', (context: any) => {
-      return JSON.stringify(context, null, 2);
+      return new Handlebars.SafeString(JSON.stringify(context, null, 2));
     });
 
     Handlebars.registerHelper('camelCase', (str: string) => {
@@ -269,7 +269,7 @@ export class CodeGenerator {
    */
   private async generateIndexFile(
     results: GenerationResult[],
-    options: GenerationOptions
+    _options: GenerationOptions
   ): Promise<void> {
     const indexContent = `// Auto-generated index file
 // Generated at: ${new Date().toISOString()}

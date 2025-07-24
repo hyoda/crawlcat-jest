@@ -10,7 +10,7 @@ module.exports = {
   ],
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended',
   ],
   root: true,
   env: {

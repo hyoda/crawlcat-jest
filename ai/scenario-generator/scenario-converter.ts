@@ -1,7 +1,8 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as Handlebars from 'handlebars';
-import { GeneratedScenario, ScenarioStep, ScenarioAssertion } from './natural-language-generator';
+import { GeneratedScenario } from './natural-language-generator';
+// import { ScenarioStep, ScenarioAssertion } from './natural-language-generator'; // Reserved for future use
 
 export interface ConversionOptions {
   outputFormat: 'jest' | 'playwright' | 'cypress';

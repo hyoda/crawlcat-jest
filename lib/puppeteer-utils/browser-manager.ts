@@ -19,7 +19,7 @@ export class BrowserManager {
     this.config = {
       headless: false,
       slowMo: 100,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      // args: ['--no-sandbox', '--disable-setuid-sandbox'], // Removed for compatibility
       viewport: { width: 1920, height: 1080 },
       userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       defaultTimeout: 30000,

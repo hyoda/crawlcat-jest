@@ -183,7 +183,7 @@ export class EcommerceCrawler {
           }
 
           // Wait between page navigations
-          await page.waitForTimeout(this.options.delay || 1000);
+          await new Promise(resolve => setTimeout(resolve, this.options.delay || 1000));
         }
       }
 
@@ -300,6 +300,7 @@ export class EcommerceCrawler {
   async monitorPrice(page: Page, productUrl: string, intervalMinutes: number = 60): Promise<void> {
     console.log(`📊 Starting price monitoring for: ${productUrl}`);
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         await page.goto(productUrl, { waitUntil: 'networkidle2' });

@@ -35,6 +35,7 @@
     "dist",
     "coverage",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "e2e/outputs/generated/**/*"
   ]
 }

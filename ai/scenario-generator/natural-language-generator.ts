@@ -276,7 +276,8 @@ export class NaturalLanguageScenarioGenerator {
 
   private generateAssertions(parsedRequirements: any): ScenarioAssertion[] {
     const assertions: ScenarioAssertion[] = [];
-    const { foundKeywords, domain } = parsedRequirements;
+    const { domain } = parsedRequirements;
+    // const foundKeywords = parsedRequirements.foundKeywords; // Reserved for future use
 
     // Generate basic assertions
     assertions.push({

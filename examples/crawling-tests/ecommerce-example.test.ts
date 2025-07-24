@@ -22,8 +22,8 @@ describe('E-commerce Crawling Example', () => {
   // Setup browser and crawler before all tests
   beforeAll(async () => {
     browserManager = new BrowserManager({
-      defaultTimeout: 10000,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      defaultTimeout: 10000
+      // args: ['--no-sandbox', '--disable-setuid-sandbox'] // Removed for compatibility
     });
 
     await browserManager.launch();
